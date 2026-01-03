@@ -78,29 +78,48 @@ export async function deleteImage(imageUrl: string): Promise<void> {
  */
 export async function initializeStorage(): Promise<void> {
   try {
-    const { data, error } = await supabase.storage
-      .from('board-images')
-      .list('', { limit: 1 });
+    // Check if bucket exists
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    
+    if (listError) {
+      throw new StorageError(`Failed to list buckets: ${listError.message}`);
+    }
 
-    if (error && error.message.includes('not found')) {
-      // Bucket doesn't exist, create it
-      const { error: createError } = await supabase.storage
-        .createBucket('board-images', {
-          public: true,
-          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
-          fileSizeLimit: 10485760, // 10MB
-        });
+    const bucketExists = buckets?.some(bucket => bucket.name === 'board-images');
+
+    if (!bucketExists) {
+      // Create bucket with public access
+      const { data, error: createError } = await supabase.storage.createBucket('board-images', {
+        public: true,
+        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'],
+        fileSizeLimit: 10485760, // 10MB
+      });
 
       if (createError) {
         throw new StorageError(`Failed to create bucket: ${createError.message}`);
       }
-    } else if (error) {
-      throw new StorageError(`Storage check failed: ${error.message}`);
+    }
+
+    // Test upload to verify permissions
+    const testFile = new Blob(['test'], { type: 'text/plain' });
+    const testPath = `test-${Date.now()}.txt`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('board-images')
+      .upload(testPath, testFile);
+
+    if (uploadError) {
+      console.warn('Storage test upload failed:', uploadError.message);
+      // Don't throw here, just log the warning
+    } else {
+      // Clean up test file
+      await supabase.storage.from('board-images').remove([testPath]);
     }
   } catch (error) {
     if (error instanceof StorageError) {
       throw error;
     }
-    throw new StorageError(`Storage initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Storage initialization failed:', error);
+    // Don't throw for initialization failures, just log them
   }
 }

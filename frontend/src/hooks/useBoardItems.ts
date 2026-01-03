@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { deleteImage } from '@/lib/storage';
 import type { Item, NewItem, ItemUpdate } from '@/lib/types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -154,6 +155,9 @@ export function useBoardItems(boardId: string | null) {
   // Delete an item
   const deleteItem = useCallback(async (itemId: string): Promise<boolean> => {
     try {
+      // Get the item first to check if it's an image that needs storage cleanup
+      const item = items.find(i => i.id === itemId);
+      
       const { error: deleteError } = await supabase
         .from('items')
         .delete()
@@ -161,13 +165,22 @@ export function useBoardItems(boardId: string | null) {
 
       if (deleteError) throw deleteError;
 
+      // If it's an image item with a Supabase Storage URL, delete from storage
+      if (item?.type === 'image' && item.content?.url) {
+        const isSupabaseUrl = item.content.url.includes('/storage/v1/object/public/board-images/');
+        if (isSupabaseUrl) {
+          // Delete from storage asynchronously (don't wait or fail if this fails)
+          deleteImage(item.content.url).catch(console.warn);
+        }
+      }
+
       return true;
     } catch (err) {
       console.error('Error deleting item:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete item');
       return false;
     }
-  }, []);
+  }, [items]);
 
   return {
     items,

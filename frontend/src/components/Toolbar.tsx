@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { NewItem } from '@/lib/types';
 import { getRandomNoteColor, getMaxZIndex, getLinkMetadata } from '@/lib/utils';
+import { uploadImage, deleteImage, initializeStorage, StorageError } from '@/lib/storage';
 import type { Item } from '@/lib/types';
 
 interface ToolbarProps {
@@ -17,7 +18,13 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize storage on component mount
+  useEffect(() => {
+    initializeStorage().catch(console.error);
+  }, []);
 
   const getNextZIndex = () => getMaxZIndex(items) + 1;
 
@@ -60,19 +67,31 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset any previous errors
+    setUploadError(null);
     setIsAdding(true);
 
-    // For MVP, we'll use a simple data URL
-    // In production, upload to Supabase Storage
-    const reader = new FileReader();
-    reader.onload = async (event) => {
+    try {
+      // Validate file type
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error('Please select a valid image file (PNG, JPEG, GIF, or WebP)');
+      }
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error('Image size must be less than 10MB');
+      }
+
+      // Upload to Supabase Storage
+      const imageUrl = await uploadImage(file, boardId);
       const position = getRandomPosition();
 
       const newItem: NewItem = {
         board_id: boardId,
         type: 'image',
         content: {
-          url: event.target?.result as string,
+          url: imageUrl,
           caption: file.name,
         },
         x: position.x,
@@ -81,15 +100,21 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
       };
 
       await onAddItem(newItem);
+    } catch (error) {
+      console.error('Image upload error:', error);
+      if (error instanceof StorageError) {
+        setUploadError(error.message);
+      } else {
+        setUploadError(error instanceof Error ? error.message : 'Failed to upload image');
+      }
+    } finally {
       setIsAdding(false);
       
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    };
-
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleAddLink = async () => {
@@ -123,6 +148,22 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
 
   return (
     <>
+      {/* Upload Error Message */}
+      {uploadError && (
+        <div className="fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 bg-red-100 text-red-700 px-4 py-2 rounded-lg shadow-lg z-50 text-sm mx-4 max-w-[calc(100vw-2rem)] text-center">
+          <div className="flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{uploadError}</span>
+            <button 
+              onClick={() => setUploadError(null)}
+              className="ml-2 text-red-500 hover:text-red-700"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-2 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3 z-50 border border-gray-200 max-w-[calc(100vw-2rem)]">
         {/* Add Note Button */}

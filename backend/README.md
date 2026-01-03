@@ -12,15 +12,16 @@ This folder contains SQL migration files and database schema for the MemoryNest 
      1. `001_initial_schema.sql` - Creates tables and triggers
      2. `002_rls_policies.sql` - Sets up Row Level Security
      3. `003_enable_realtime.sql` - Enables Realtime subscriptions
+     4. `004_storage_policies.sql` - Sets up storage bucket policies for images
 
 3. **Enable Realtime in Dashboard:**
    - Navigate to Database → Replication
    - Toggle on Realtime for `items` and `boards` tables
 
-4. **Create Storage Bucket** (for images):
-   - Go to Storage in Supabase Dashboard
-   - Create a new bucket named `board-images`
-   - Set it to public or use signed URLs based on your preference
+4. **Storage Setup:**
+   - The `board-images` bucket will be created automatically by the app
+   - Run `004_storage_policies.sql` after the bucket is created
+   - Images are stored with public read access for better performance
 
 5. **Get your credentials:**
    - Go to Project Settings → API
