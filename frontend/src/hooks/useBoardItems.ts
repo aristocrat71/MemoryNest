@@ -158,12 +158,21 @@ export function useBoardItems(boardId: string | null) {
       // Get the item first to check if it's an image that needs storage cleanup
       const item = items.find(i => i.id === itemId);
       
+      // Optimistically remove from UI immediately
+      setItems((current) => current.filter((i) => i.id !== itemId));
+      
       const { error: deleteError } = await supabase
         .from('items')
         .delete()
         .eq('id', itemId);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        // Rollback optimistic update on error
+        if (item) {
+          setItems((current) => [...current, item]);
+        }
+        throw deleteError;
+      }
 
       // If it's an image item with a Supabase Storage URL, delete from storage
       if (item?.type === 'image' && item.content?.url) {
