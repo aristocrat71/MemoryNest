@@ -111,18 +111,18 @@ export default function Home() {
       
       <main className="w-full max-w-md relative z-10">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-800 mb-3">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 mb-2 sm:mb-3">
             ✨ MemoryNest
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-base sm:text-lg">
             Your shared digital scrapbook
           </p>
         </div>
 
         {/* Error message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs sm:text-sm">
             {error}
           </div>
         )}
@@ -130,8 +130,8 @@ export default function Home() {
         {isAuthenticated && (
           <>
             {/* Create Board Section */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 Create a new board
               </h2>
               <input
@@ -140,51 +140,50 @@ export default function Home() {
                 onChange={(e) => setBoardTitle(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateBoard()}
                 placeholder="Board name (e.g., Our Memories)"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400 mb-4"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400 mb-3 sm:mb-4 text-sm sm:text-base"
               />
               <button
                 onClick={handleCreateBoard}
                 disabled={isCreating || !boardTitle.trim()}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-sm sm:text-base"
               >
                 {isCreating ? 'Creating...' : 'Create Board'}
               </button>
             </div>
 
             {/* Divider */}
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-4 sm:mb-6">
               <div className="flex-1 h-px bg-gray-300"></div>
-              <span className="text-gray-500 text-sm">OR</span>
+              <span className="text-gray-500 text-xs sm:text-sm">OR</span>
               <div className="flex-1 h-px bg-gray-300"></div>
             </div>
 
-            {/* Open Board Section */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Open an existing board
-              </h2>
-              <input
-                type="text"
-                value={slugToOpen}
-                onChange={(e) => setSlugToOpen(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleOpenBoard()}
-                placeholder="Enter board link or code"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400 mb-4"
-              />
-              <button
-                onClick={handleOpenBoard}
-                disabled={!slugToOpen.trim()}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+            {/* View Boards Button */}
+            <button
+              onClick={() => router.push('/boards')}
+              className="w-full bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-300 text-gray-900 font-semibold py-3 rounded-xl transition-all mb-6 flex items-center justify-center gap-2 active:scale-[0.98] text-sm sm:text-base"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                Open Board
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                />
+              </svg>
+              View All Boards
+            </button>
 
             {/* Logout Button */}
             <div className="flex justify-center">
               <button
                 onClick={handleLogout}
-                className="text-gray-500 hover:text-gray-700 text-sm underline underline-offset-2 transition-colors"
+                className="text-gray-500 hover:text-gray-700 text-xs sm:text-sm underline underline-offset-2 transition-colors"
               >
                 Logout
               </button>
@@ -193,7 +192,7 @@ export default function Home() {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-8 text-gray-500 text-sm">
+        <div className="text-center mt-6 sm:mt-8 text-gray-500 text-xs sm:text-sm">
           <p>
             Create a private board to share memories, notes, and moments
           </p>

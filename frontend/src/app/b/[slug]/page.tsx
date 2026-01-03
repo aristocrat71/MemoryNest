@@ -15,7 +15,6 @@ export default function BoardPage() {
   const [board, setBoard] = useState<Board | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showShareModal, setShowShareModal] = useState(false);
 
   const {
     items,
@@ -62,14 +61,6 @@ export default function BoardPage() {
     fetchBoard();
   }, [slug]);
 
-  const copyShareLink = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    setShowShareModal(false);
-    // You could add a toast notification here
-    alert('Link copied to clipboard!');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
@@ -106,15 +97,15 @@ export default function BoardPage() {
   return (
     <div className="relative w-full h-screen">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-4">
+      <div className="absolute top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
           <button
             onClick={() => router.push('/')}
-            className="text-gray-600 hover:text-gray-900 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+            className="text-gray-600 hover:text-gray-900 transition-colors p-1 hover:bg-gray-100 rounded-lg flex-shrink-0"
             title="Home"
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5 sm:w-6 sm:h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -127,40 +118,21 @@ export default function BoardPage() {
               />
             </svg>
           </button>
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-base sm:text-xl font-semibold text-gray-900 truncate">
             {board.title}
           </h1>
         </div>
-
-        <button
-          onClick={() => setShowShareModal(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-xl transition-all text-sm font-medium shadow-md active:scale-[0.98]"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-            />
-          </svg>
-          Share
-        </button>
       </div>
 
-      {/* Board Canvas */}
-      <div className="pt-16 h-full">
-        {itemsError && (
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-red-100 text-red-700 px-4 py-2 rounded-lg shadow-lg z-50">
-            {itemsError}
-          </div>
-        )}
+      {/* Error message */}
+      {itemsError && (
+        <div className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 bg-red-100 text-red-700 px-3 sm:px-4 py-2 rounded-lg shadow-lg z-50 text-xs sm:text-sm mx-4 max-w-[calc(100%-2rem)]">
+          {itemsError}
+        </div>
+      )}
 
+      {/* Board Canvas */}
+      <div className="pt-12 sm:pt-16 h-full">
         <BoardCanvas
           boardId={board.id}
           items={items}
@@ -169,40 +141,6 @@ export default function BoardPage() {
           onDeleteItem={deleteItem}
         />
       </div>
-
-      {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full border border-white/20">
-            <div className="text-center mb-6">
-              <div className="text-4xl mb-2">🔗</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Share this board
-              </h2>
-              <p className="text-gray-600 text-sm">
-                Anyone with this link can view and edit this board. Keep it private!
-              </p>
-            </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6 font-mono text-xs break-all text-gray-700">
-              {window.location.href}
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={copyShareLink}
-                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 rounded-xl font-semibold transition-all shadow-md active:scale-[0.98]"
-              >
-                Copy Link
-              </button>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 py-3 rounded-xl font-semibold transition-all active:scale-[0.98]"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

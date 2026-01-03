@@ -102,21 +102,21 @@ export default function BoardCanvas({
 
       {/* Instructions overlay */}
       {items.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center text-gray-500">
-            <p className="text-2xl font-light mb-2">✨ Your board is empty</p>
-            <p className="text-sm">Click the buttons below to add notes, images, or links</p>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-4">
+          <div className="text-center text-gray-500 max-w-sm">
+            <p className="text-xl sm:text-2xl font-light mb-2">✨ Your board is empty</p>
+            <p className="text-xs sm:text-sm">Click the buttons below to add notes, images, or links</p>
           </div>
         </div>
       )}
 
       {/* Item count badge */}
-      <div className="fixed top-4 right-4 bg-white/90 backdrop-blur-md rounded-full px-4 py-2 text-sm text-gray-700 font-medium shadow-md border border-gray-100">
+      <div className="fixed top-3 sm:top-4 right-3 sm:right-4 bg-white/90 backdrop-blur-md rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 font-medium shadow-md border border-gray-100">
         {items.length} {items.length === 1 ? 'item' : 'items'}
       </div>
 
-      {/* Pan instruction */}
-      <div className="fixed top-4 left-4 bg-white/90 backdrop-blur-md rounded-xl px-3 py-2 text-xs text-gray-700 shadow-md border border-gray-100">
+      {/* Pan instruction - hide on mobile */}
+      <div className="hidden sm:block fixed top-4 left-4 bg-white/90 backdrop-blur-md rounded-xl px-3 py-2 text-xs text-gray-700 shadow-md border border-gray-100">
         Hold <kbd className="px-1.5 py-0.5 bg-gray-200 text-gray-800 rounded font-mono text-xs">Shift</kbd> + drag to pan
       </div>
     </div>

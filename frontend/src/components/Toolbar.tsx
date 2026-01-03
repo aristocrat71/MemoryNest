@@ -124,35 +124,38 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
   return (
     <>
       {/* Toolbar */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-4 py-3 flex items-center gap-3 z-50 border border-gray-200">
+      <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-2 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3 z-50 border border-gray-200 max-w-[calc(100vw-2rem)]">
         {/* Add Note Button */}
         <button
           onClick={() => setShowNoteInput(!showNoteInput)}
           disabled={isAdding}
-          className="flex items-center gap-2 px-4 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-full transition-all text-sm font-medium disabled:opacity-50 active:scale-[0.95]"
+          className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-full transition-all text-xs sm:text-sm font-medium disabled:opacity-50 active:scale-[0.95]"
           title="Add Note"
         >
-          📝 Note
+          <span>📝</span>
+          <span className="hidden sm:inline">Note</span>
         </button>
 
         {/* Add Image Button */}
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isAdding}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-full transition-all text-sm font-medium disabled:opacity-50 active:scale-[0.95]"
+          className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-full transition-all text-xs sm:text-sm font-medium disabled:opacity-50 active:scale-[0.95]"
           title="Add Image"
         >
-          🖼️ Image
+          <span>🖼️</span>
+          <span className="hidden sm:inline">Image</span>
         </button>
 
         {/* Add Link Button */}
         <button
           onClick={() => setShowLinkInput(!showLinkInput)}
           disabled={isAdding}
-          className="flex items-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-800 rounded-full transition-all text-sm font-medium disabled:opacity-50 active:scale-[0.95]"
+          className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-green-100 hover:bg-green-200 text-green-800 rounded-full transition-all text-xs sm:text-sm font-medium disabled:opacity-50 active:scale-[0.95]"
           title="Add Link"
         >
-          🔗 Link
+          <span>🔗</span>
+          <span className="hidden sm:inline">Link</span>
         </button>
 
         {/* Hidden file input */}
@@ -168,20 +171,20 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
       {/* Note Input Modal */}
       {showNoteInput && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full border border-white/20">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">📝 Add a Note</h3>
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-white/20">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">📝 Add a Note</h3>
             <textarea
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
               placeholder="Write your note..."
-              className="w-full h-32 p-4 bg-gray-50 border border-gray-200 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400"
+              className="w-full h-32 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl sm:rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400 text-sm sm:text-base"
               autoFocus
             />
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-4 sm:mt-6">
               <button
                 onClick={handleAddNote}
                 disabled={!noteText.trim() || isAdding}
-                className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2.5 sm:py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] text-sm sm:text-base"
               >
                 {isAdding ? 'Adding...' : 'Add Note'}
               </button>
@@ -190,7 +193,7 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
                   setShowNoteInput(false);
                   setNoteText('');
                 }}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 py-3 rounded-xl font-semibold transition-all active:scale-[0.98]"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 py-2.5 sm:py-3 rounded-xl font-semibold transition-all active:scale-[0.98] text-sm sm:text-base"
               >
                 Cancel
               </button>
@@ -202,21 +205,21 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
       {/* Link Input Modal */}
       {showLinkInput && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full border border-white/20">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">🔗 Add a Link</h3>
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-white/20">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">🔗 Add a Link</h3>
             <input
               type="url"
               value={linkUrl}
               onChange={(e) => setLinkUrl(e.target.value)}
               placeholder="https://example.com"
-              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400"
+              className="w-full p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400 text-sm sm:text-base"
               autoFocus
             />
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-4 sm:mt-6">
               <button
                 onClick={handleAddLink}
                 disabled={!linkUrl.trim() || isAdding}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2.5 sm:py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] text-sm sm:text-base"
               >
                 {isAdding ? 'Adding...' : 'Add Link'}
               </button>
@@ -225,7 +228,7 @@ export default function Toolbar({ boardId, items, onAddItem }: ToolbarProps) {
                   setShowLinkInput(false);
                   setLinkUrl('');
                 }}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 py-3 rounded-xl font-semibold transition-all active:scale-[0.98]"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 py-2.5 sm:py-3 rounded-xl font-semibold transition-all active:scale-[0.98] text-sm sm:text-base"
               >
                 Cancel
               </button>
