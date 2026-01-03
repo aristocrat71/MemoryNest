@@ -90,25 +90,27 @@ export async function initializeStorage(): Promise<void> {
     const { data: buckets, error: listError } = await supabase.storage.listBuckets();
     
     if (listError) {
-      throw new StorageError(`Failed to list buckets: ${listError.message}`);
+      console.warn('Failed to list buckets:', listError.message);
+      return; // Don't throw, just return
     }
 
     const bucketExists = buckets?.some(bucket => bucket.name === 'board-images');
 
     if (!bucketExists) {
-      // Create bucket with public access
-      const { data, error: createError } = await supabase.storage.createBucket('board-images', {
+      // Try to create bucket with public access
+      const { error: createError } = await supabase.storage.createBucket('board-images', {
         public: true,
         allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'],
         fileSizeLimit: 10485760, // 10MB
       });
 
       if (createError) {
-        throw new StorageError(`Failed to create bucket: ${createError.message}`);
+        console.warn('Could not create bucket (it may already exist):', createError.message);
+        return; // Don't throw, just return
       }
     }
 
-    // Test upload to verify permissions
+    // Test upload to verify permissions (optional)
     const testFile = new Blob(['test'], { type: 'text/plain' });
     const testPath = `test-${Date.now()}.txt`;
     
@@ -116,18 +118,12 @@ export async function initializeStorage(): Promise<void> {
       .from('board-images')
       .upload(testPath, testFile);
 
-    if (uploadError) {
-      console.warn('Storage test upload failed:', uploadError.message);
-      // Don't throw here, just log the warning
-    } else {
+    if (!uploadError) {
       // Clean up test file
       await supabase.storage.from('board-images').remove([testPath]);
     }
   } catch (error) {
-    if (error instanceof StorageError) {
-      throw error;
-    }
-    console.error('Storage initialization failed:', error);
-    // Don't throw for initialization failures, just log them
+    // Don't throw errors for storage initialization, just log them
+    console.warn('Storage initialization warning:', error instanceof Error ? error.message : 'Unknown error');
   }
 }
