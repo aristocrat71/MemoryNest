@@ -1,65 +1,273 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
+import { generateSecretSlug, getRandomNoteColor } from '@/lib/utils';
+import { login, logout, getAuthSession } from '@/lib/auth';
 
 export default function Home() {
+  const router = useRouter();
+  const [boardTitle, setBoardTitle] = useState('');
+  const [slugToOpen, setSlugToOpen] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Auth states
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const session = getAuthSession();
+    setIsAuthenticated(session.isAuthenticated);
+    if (!session.isAuthenticated) {
+      setShowLoginModal(true);
+    }
+  }, []);
+
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    setLoginError(null);
+
+    const result = await login(userId, password);
+    if (result.success) {
+      setIsAuthenticated(true);
+      setShowLoginModal(false);
+      setUserId('');
+      setPassword('');
+    } else {
+      setLoginError(result.error || 'Login failed');
+    }
+
+    setIsLoggingIn(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsAuthenticated(false);
+    setShowLoginModal(true);
+  };
+
+  const handleCreateBoard = async () => {
+    if (!boardTitle.trim()) {
+      setError('Please enter a board name');
+      return;
+    }
+
+    setIsCreating(true);
+    setError(null);
+
+    try {
+      const secretSlug = generateSecretSlug();
+
+      const { data, error: createError } = await supabase
+        .from('boards')
+        .insert([
+          {
+            title: boardTitle,
+            secret_slug: secretSlug,
+          },
+        ])
+        .select()
+        .single();
+
+      if (createError) throw createError;
+
+      // Navigate to the new board
+      router.push(`/b/${secretSlug}`);
+    } catch (err) {
+      console.error('Error creating board:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create board');
+      setIsCreating(false);
+    }
+  };
+
+  const handleOpenBoard = () => {
+    if (!slugToOpen.trim()) {
+      setError('Please enter a board link or code');
+      return;
+    }
+
+    // Extract slug from full URL or use as-is
+    let slug = slugToOpen.trim();
+    const urlMatch = slug.match(/\/b\/([^/?]+)/);
+    if (urlMatch) {
+      slug = urlMatch[1];
+    }
+
+    router.push(`/b/${slug}`);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-100 rounded-full blur-[120px] opacity-50"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-100 rounded-full blur-[120px] opacity-50"></div>
+      
+      <main className="w-full max-w-md relative z-10">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-gray-800 mb-3">
+            ✨ MemoryNest
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-gray-600 text-lg">
+            Your shared digital scrapbook
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Error message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        {isAuthenticated && (
+          <>
+            {/* Create Board Section */}
+            <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Create a new board
+              </h2>
+              <input
+                type="text"
+                value={boardTitle}
+                onChange={(e) => setBoardTitle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateBoard()}
+                placeholder="Board name (e.g., Our Memories)"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400 mb-4"
+              />
+              <button
+                onClick={handleCreateBoard}
+                disabled={isCreating || !boardTitle.trim()}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+              >
+                {isCreating ? 'Creating...' : 'Create Board'}
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex-1 h-px bg-gray-300"></div>
+              <span className="text-gray-500 text-sm">OR</span>
+              <div className="flex-1 h-px bg-gray-300"></div>
+            </div>
+
+            {/* Open Board Section */}
+            <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Open an existing board
+              </h2>
+              <input
+                type="text"
+                value={slugToOpen}
+                onChange={(e) => setSlugToOpen(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleOpenBoard()}
+                placeholder="Enter board link or code"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400 mb-4"
+              />
+              <button
+                onClick={handleOpenBoard}
+                disabled={!slugToOpen.trim()}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+              >
+                Open Board
+              </button>
+            </div>
+
+            {/* Logout Button */}
+            <div className="flex justify-center">
+              <button
+                onClick={handleLogout}
+                className="text-gray-500 hover:text-gray-700 text-sm underline underline-offset-2 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Footer */}
+        <div className="text-center mt-8 text-gray-500 text-sm">
+          <p>
+            Create a private board to share memories, notes, and moments
+          </p>
         </div>
       </main>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full border border-white/20">
+            <div className="text-center mb-8">
+              <div className="text-4xl mb-2">🏠</div>
+              <h2 className="text-3xl font-bold text-gray-900">
+                Welcome Home
+              </h2>
+              <p className="text-gray-500 mt-2">Please sign in to access your nest</p>
+            </div>
+
+            {loginError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm flex items-center gap-2">
+                <span>⚠️</span> {loginError}
+              </div>
+            )}
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 ml-1">
+                  User ID
+                </label>
+                <input
+                  type="text"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  placeholder="your@email.com"
+                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-300"
+                  disabled={isLoggingIn}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 ml-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  placeholder="••••••••"
+                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-gray-900 placeholder:text-gray-300"
+                  disabled={isLoggingIn}
+                />
+              </div>
+
+              <button
+                onClick={handleLogin}
+                disabled={isLoggingIn || !userId.trim() || !password.trim()}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-purple-200 disabled:opacity-50 disabled:shadow-none mt-4 active:scale-[0.98]"
+              >
+                {isLoggingIn ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Signing in...
+                  </span>
+                ) : 'Sign In'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
