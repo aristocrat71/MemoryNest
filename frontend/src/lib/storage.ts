@@ -29,12 +29,20 @@ export async function uploadImage(file: File, boardId: string): Promise<string> 
       throw new StorageError(`Failed to upload image: ${error.message}`);
     }
 
-    // Get public URL
+    // Get public URL - ensure it's properly formatted
     const { data: urlData } = supabase.storage
       .from('board-images')
       .getPublicUrl(data.path);
 
-    return urlData.publicUrl;
+    const publicUrl = urlData.publicUrl;
+    
+    // Log for debugging
+    console.log('Image uploaded successfully:', {
+      path: data.path,
+      url: publicUrl,
+    });
+
+    return publicUrl;
   } catch (error) {
     if (error instanceof StorageError) {
       throw error;

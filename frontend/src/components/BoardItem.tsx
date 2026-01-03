@@ -13,6 +13,7 @@ interface BoardItemProps {
 
 export default function BoardItem({ item, onUpdate, onDelete, onBringToFront }: BoardItemProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const nodeRef = useRef<HTMLDivElement>(null);
 
   const handleDragStart = () => {
@@ -64,6 +65,16 @@ export default function BoardItem({ item, onUpdate, onDelete, onBringToFront }: 
             </div>
           );
         }
+        
+        if (imageError) {
+          return (
+            <div className="bg-gray-100 rounded-lg shadow-md p-4 text-gray-600 text-xs max-w-[300px] break-words">
+              <div className="text-red-600 font-semibold mb-2">Failed to load image</div>
+              <div className="text-gray-500">URL: {item.content.url.slice(0, 60)}...</div>
+            </div>
+          );
+        }
+        
         return (
           <div className="bg-white rounded-xl shadow-md overflow-hidden max-w-[300px] sm:max-w-[400px]">
             <img
@@ -72,6 +83,10 @@ export default function BoardItem({ item, onUpdate, onDelete, onBringToFront }: 
               className="w-full h-auto object-cover"
               style={{
                 maxHeight: item.content.height || 300,
+              }}
+              onError={() => {
+                console.error('Failed to load image from:', item.content.url);
+                setImageError(true);
               }}
             />
             {item.content.caption && (
